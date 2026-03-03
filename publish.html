@@ -107,14 +107,32 @@
   </div>
 
   <script>
-    // 格式化日期：2026-03-03
-    const formatDate = () => {
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      return `${year}-${month}-${day}`;
-    };
+    // 提交表单
+    document.getElementById('publish-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
+      const content = document.getElementById('content').value.trim();
+      const id = Date.now(); // 使用时间戳作为唯一ID，用于生成北京时间
+
+      // 1. 获取本地存储的文章列表
+      let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+      // 2. 添加新文章（最新的放在最前面）
+      posts.unshift({
+        id, // 核心：唯一ID（时间戳）
+        title,
+        category,
+        tags,
+        content
+      });
+      // 3. 存回本地存储
+      localStorage.setItem('my_blog_posts', JSON.stringify(posts));
+      
+      // 4. 提示并跳转到主页
+      alert('发布成功！即将返回主页');
+      window.location.href = '/'; // 跳转到 index.html
+    });
 
     // 插入图片
     document.getElementById('insert-image').addEventListener('click', () => {
@@ -133,35 +151,6 @@
         const content = document.getElementById('content');
         content.value += `\n[${attachmentName}](${attachmentUrl})\n`;
       }
-    });
-
-    // 提交表单
-    document.getElementById('publish-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const title = document.getElementById('title').value.trim();
-      const category = document.getElementById('category').value;
-      const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
-      const content = document.getElementById('content').value.trim();
-      const date = formatDate();
-      const id = Date.now(); // 使用时间戳作为唯一ID，彻底杜绝重复
-
-      // 1. 获取本地存储的文章列表
-      let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-      // 2. 添加新文章（最新的放在最前面）
-      posts.unshift({
-        id, // 核心：唯一ID
-        title,
-        category,
-        tags,
-        content,
-        date
-      });
-      // 3. 存回本地存储
-      localStorage.setItem('my_blog_posts', JSON.stringify(posts));
-      
-      // 4. 提示并跳转到主页
-      alert('发布成功！即将返回主页');
-      window.location.href = '/'; // 跳转到 index.html
     });
   </script>
 </body>
