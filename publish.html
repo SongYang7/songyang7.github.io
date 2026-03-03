@@ -88,6 +88,16 @@
       return `${year}-${month}-${day}`;
     };
 
+    // 生成唯一的文章标识（slug），用于URL链接
+    const generateSlug = (title) => {
+      // 转小写 + 替换特殊字符 + 去除首尾横线
+      return title.toLowerCase()
+        .replace(/[\s\u4e00-\u9fa5]+/g, '-') // 空格和中文替换为横线
+        .replace(/[^a-z0-9-]/g, '') // 移除非字母数字和横线的字符
+        .replace(/(^-|-$)/g, '') // 移除首尾横线
+        .replace(/-+/g, '-'); // 多个横线合并为一个
+    };
+
     // 提交表单
     document.getElementById('publish-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -96,17 +106,20 @@
       const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
       const content = document.getElementById('content').value.trim();
       const date = formatDate();
+      // 生成唯一slug（解决文章链接点击问题的核心）
+      const slug = generateSlug(title) || `post-${Date.now()}`; // 兜底：如果标题为空则用时间戳
 
       // 1. 获取本地存储的文章列表
       let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-      // 2. 添加新文章
+      // 2. 添加新文章（新增slug字段）
       posts.unshift({ // unshift 把新文章放到最前面
         id: Date.now(), // 唯一ID
         title,
         category,
         tags,
         content,
-        date
+        date,
+        slug // 新增：文章唯一标识，用于链接
       });
       // 3. 存回本地存储
       localStorage.setItem('my_blog_posts', JSON.stringify(posts));
