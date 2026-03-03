@@ -809,7 +809,8 @@ const renderLocalPosts = () => {
         const postHtml = `
             <div class="recent-post-item" data-local-post="true" data-post-id="${post.id}">
                 <div class="recent-post-info no-cover">
-                    <a class="article-title" href="#${post.slug}" title="${post.title}">${post.title}</a>
+                    <!-- 修复核心：使用id作为链接锚点，彻底避免slug重复问题 -->
+                    <a class="article-title" href="#post-${post.id}" title="${post.title}">${post.title}</a>
                     <div class="article-meta-wrap">
                         <span class="post-meta-date">
                             <i class="far fa-calendar-alt"></i>
@@ -909,7 +910,8 @@ const saveEditedPost = (e) => {
         closeEditModal();
         renderLocalPosts();
         alert('文章修改成功！');
-        window.location.href = `#${posts[postIndex].slug}`; // 刷新详情页
+        // 刷新详情页（使用id锚点）
+        window.location.href = `#post-${currentEditPostId}`;
     }
 };
 
@@ -941,9 +943,9 @@ const insertAttachment = () => {
 // 解析文章内容中的图片和附件
 const parseRichContent = (content) => {
     // 解析图片：![alt](url)
-    content = content.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1">');
+    let parsedContent = content.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1">');
     // 解析附件：[name](url)
-    content = content.replace(/\[(.*?)\]\((.*?)\)/g, (match, name, url) => {
+    parsedContent = parsedContent.replace(/\[(.*?)\]\((.*?)\)/g, (match, name, url) => {
         return `
             <div class="attachment-item">
                 <i class="fas fa-file"></i>
@@ -955,17 +957,26 @@ const parseRichContent = (content) => {
         `;
     });
     // 解析换行
-    return content.replace(/\n/g, '<br>');
+    return parsedContent.replace(/\n/g, '<br>');
 };
 
-// 根据URL hash显示文章详情（带操作按钮）
+// 根据URL hash显示文章详情（核心修复：匹配post-id，而非slug）
 const showPostDetail = () => {
     const hash = window.location.hash.substring(1);
-    if (!hash) return;
+    // 过滤非本地文章的hash
+    if (!hash || !hash.startsWith('post-')) return;
+    
+    // 提取文章ID
+    const postId = parseInt(hash.replace('post-', ''));
+    if (isNaN(postId)) return;
 
     const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-    const post = posts.find(p => p.slug === hash);
+    const post = posts.find(p => p.id === postId);
     if (!post) return;
+
+    // 先删除已存在的详情页，避免重复渲染
+    const oldDetail = document.querySelector('.post-detail');
+    if (oldDetail) oldDetail.remove();
 
     // 隐藏文章列表，显示文章详情
     document.getElementById('recent-posts').style.display = 'none';
@@ -994,13 +1005,13 @@ const showPostDetail = () => {
 
     // 绑定详情页内的编辑/删除按钮事件
     document.querySelector('.edit-btn').addEventListener('click', (e) => {
-        const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
-        openEditModal(postId);
+        const targetId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+        openEditModal(targetId);
     });
     document.querySelector('.delete-btn').addEventListener('click', (e) => {
-        const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+        const targetId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
         if (confirm('确定要删除这篇文章吗？删除后无法恢复！')) {
-            deletePost(postId);
+            deletePost(targetId);
         }
     });
 };
@@ -1018,7 +1029,10 @@ window.onload = () => {
     renderLocalPosts();
     showPostDetail();
 };
-window.onhashchange = showPostDetail;
+window.onhashchange = () => {
+    // 每次hash变化都重新检查并渲染
+    showPostDetail();
+};
     </script>
 </body>
 </html>
