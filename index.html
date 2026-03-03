@@ -210,7 +210,7 @@
         };
     </script>
 
-    <!-- 新增：按钮样式优化 + 文章详情页样式 -->
+    <!-- 新增：按钮样式优化 + 文章详情页样式 + 编辑弹窗样式 -->
     <style>
         #publish-btn {
             display: block;
@@ -279,6 +279,106 @@
         }
         .back-btn:hover {
             background: #3aa776;
+        }
+        /* 新增：文章操作按钮样式 */
+        .post-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .edit-btn, .delete-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .edit-btn {
+            background: #409eff;
+        }
+        .edit-btn:hover {
+            background: #3399ff;
+        }
+        .delete-btn {
+            background: #f56c6c;
+        }
+        .delete-btn:hover {
+            background: #f45454;
+        }
+        /* 新增：编辑弹窗样式 */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .edit-modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 800px;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .edit-modal h3 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .edit-modal .form-group {
+            margin-bottom: 1rem;
+        }
+        .edit-modal label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .edit-modal input, .edit-modal select, .edit-modal textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .edit-modal textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        .modal-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .save-btn {
+            background: #42b983;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-btn:hover {
+            background: #3aa776;
+        }
+        .cancel-btn {
+            background: #909399;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cancel-btn:hover {
+            background: #82868b;
         }
     </style>
 
@@ -520,6 +620,41 @@
             </div>
         </main>
 
+        <!-- 新增：文章编辑弹窗 -->
+        <div class="edit-modal" id="edit-modal">
+            <div class="edit-modal-content">
+                <h3>编辑文章</h3>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-post-id">
+                    <div class="form-group">
+                        <label for="edit-title">文章标题</label>
+                        <input type="text" id="edit-title" name="edit-title" required placeholder="请输入文章标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category">文章分类</label>
+                        <select id="edit-category" name="edit-category" required>
+                            <option value="博客搭建">博客搭建</option>
+                            <option value="前端开发">前端开发</option>
+                            <option value="后端开发">后端开发</option>
+                            <option value="网络安全">网络安全</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-tags">文章标签（用逗号分隔）</label>
+                        <input type="text" id="edit-tags" name="edit-tags" placeholder="例如: Hexo, 教程">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-content">文章内容</label>
+                        <textarea id="edit-content" name="edit-content" required placeholder="请输入文章内容"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="cancel-btn" id="cancel-edit">取消</button>
+                        <button type="submit" class="save-btn">保存修改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- 页脚 -->
         <footer id="footer">
             <div class="footer-other">
@@ -564,17 +699,24 @@
     <div class="js-pjax"></div>
     <script async data-pjax src="/"></script>
 
-    <!-- 新增：动态渲染本地存储的文章 + 文章详情页逻辑 -->
+    <!-- 新增：动态渲染本地存储的文章 + 增删改功能 -->
     <script>
+// 全局变量：当前编辑的文章ID
+let currentEditPostId = null;
+
 // 渲染本地存储的文章到主页并更新文章数目
 const renderLocalPosts = () => {
     const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
     const container = document.getElementById('post-list-container');
     
-    // 遍历新文章，生成HTML（链接改为#slug）
+    // 先清空已有的本地文章（避免重复渲染）
+    const localPostItems = container.querySelectorAll('.recent-post-item[data-local-post="true"]');
+    localPostItems.forEach(item => item.remove());
+    
+    // 遍历新文章，生成HTML（包含编辑/删除按钮）
     posts.forEach(post => {
         const postHtml = `
-            <div class="recent-post-item">
+            <div class="recent-post-item" data-local-post="true" data-post-id="${post.id}">
                 <div class="recent-post-info no-cover">
                     <a class="article-title" href="#${post.slug}" title="${post.title}">${post.title}</a>
                     <div class="article-meta-wrap">
@@ -590,6 +732,15 @@ const renderLocalPosts = () => {
                         </span>
                     </div>
                     <div class="content">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</div>
+                    <!-- 新增：文章操作按钮 -->
+                    <div class="post-actions">
+                        <button class="edit-btn" data-id="${post.id}">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="delete-btn" data-id="${post.id}">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -608,6 +759,97 @@ const renderLocalPosts = () => {
     const webinfoPostCount = document.querySelector('.webinfo-item:nth-child(1) .item-count');
     if (webinfoPostCount) {
         webinfoPostCount.textContent = totalPostCount;
+    }
+
+    // 绑定编辑/删除按钮事件
+    bindPostActions();
+};
+
+// 绑定文章编辑/删除事件
+const bindPostActions = () => {
+    // 编辑按钮事件
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+            openEditModal(postId);
+        });
+    });
+
+    // 删除按钮事件
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+            if (confirm('确定要删除这篇文章吗？删除后无法恢复！')) {
+                deletePost(postId);
+            }
+        });
+    });
+};
+
+// 打开编辑弹窗
+const openEditModal = (postId) => {
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    // 填充表单数据
+    document.getElementById('edit-post-id').value = post.id;
+    document.getElementById('edit-title').value = post.title;
+    document.getElementById('edit-category').value = post.category;
+    document.getElementById('edit-tags').value = post.tags.join(', ');
+    document.getElementById('edit-content').value = post.content;
+
+    // 显示弹窗
+    document.getElementById('edit-modal').style.display = 'flex';
+    currentEditPostId = postId;
+};
+
+// 关闭编辑弹窗
+const closeEditModal = () => {
+    document.getElementById('edit-modal').style.display = 'none';
+    document.getElementById('edit-form').reset();
+    currentEditPostId = null;
+};
+
+// 删除文章
+const deletePost = (postId) => {
+    let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    posts = posts.filter(p => p.id !== postId);
+    localStorage.setItem('my_blog_posts', JSON.stringify(posts));
+    
+    // 重新渲染文章列表
+    renderLocalPosts();
+    alert('文章删除成功！');
+};
+
+// 保存编辑后的文章
+const saveEditedPost = (e) => {
+    e.preventDefault();
+    
+    if (!currentEditPostId) return;
+
+    const title = document.getElementById('edit-title').value.trim();
+    const category = document.getElementById('edit-category').value;
+    const tags = document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(t => t);
+    const content = document.getElementById('edit-content').value.trim();
+
+    let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const postIndex = posts.findIndex(p => p.id === currentEditPostId);
+    
+    if (postIndex !== -1) {
+        // 更新文章信息（保留原有的date和slug）
+        posts[postIndex] = {
+            ...posts[postIndex],
+            title,
+            category,
+            tags,
+            content
+        };
+        
+        localStorage.setItem('my_blog_posts', JSON.stringify(posts));
+        closeEditModal();
+        renderLocalPosts();
+        alert('文章修改成功！');
     }
 };
 
@@ -636,6 +878,11 @@ const showPostDetail = () => {
     `;
     document.getElementById('content-inner').insertBefore(detailContainer, document.getElementById('aside-content'));
 };
+
+// 绑定编辑表单提交事件
+document.getElementById('edit-form').addEventListener('submit', saveEditedPost);
+// 绑定取消编辑按钮事件
+document.getElementById('cancel-edit').addEventListener('click', closeEditModal);
 
 // 页面加载和URL变化时执行
 window.onload = () => {
