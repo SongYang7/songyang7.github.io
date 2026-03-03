@@ -1,168 +1,1024 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>发布新文章 - Songyang</title>
-  <link rel="stylesheet" href="/css/index.css?v=5.5.2">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
-  <style>
-    .publish-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Songyang - 个人博客</title>
+    <meta name="author" content="Songyang">
+    <meta name="copyright" content="Songyang">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    
+    <!-- Open Graph 社交分享元数据 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Songyang - 个人博客">
+    <meta property="og:url" content="https://songyang7.github.io/index.html">
+    <meta property="og:site_name" content="Songyang 的个人博客">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://songyang7.github.io/images/TX.jpg">
+    <meta property="article:author" content="Songyang">
+    
+    <!-- Twitter 社交分享元数据 -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://songyang7.github.io/images/TX.jpg">
+    
+    <!-- Schema.org 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Songyang 的个人博客",
+        "alternateName": [
+            "Songyang Home",
+            "songyang7.github.io"
+        ],
+        "url": "https://songyang7.github.io/"
     }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: bold;
-    }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-    .form-group textarea {
-      min-height: 200px;
-      resize: vertical;
-    }
-    .submit-btn {
-      background: #42b983;
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .submit-btn:hover {
-      background: #3aa776;
-    }
-    /* 富文本操作按钮 */
-    .rich-text-actions {
-      display: flex;
-      gap: 0.8rem;
-      margin-bottom: 0.8rem;
-    }
-    .insert-btn {
-      padding: 0.5rem 1rem;
-      background: #f0f2f5;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .insert-btn:hover {
-      background: #e6e8eb;
-    }
-  </style>
+    </script>
+
+    <!-- 站点资源引用 -->
+    <link rel="shortcut icon" href="/img/favicon.png">
+    <link rel="canonical" href="https://songyang7.github.io/index.html">
+    <link rel="preconnect" href="//cdn.jsdelivr.net">
+    <link rel="preconnect" href="//busuanzi.ibruce.info">
+    
+    <!-- 样式表 -->
+    <link rel="stylesheet" href="/css/index.css?v=5.5.2">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
+
+    <!-- 核心工具函数与初始化脚本 -->
+    <script>
+        (() => {
+            // 本地存储工具（带过期时间）
+            const saveToLocal = {
+                set: (key, value, ttl) => {
+                    if (!ttl) return;
+                    const expiry = Date.now() + ttl * 86400000;
+                    localStorage.setItem(key, JSON.stringify({ value, expiry }));
+                },
+                get: (key) => {
+                    const itemStr = localStorage.getItem(key);
+                    if (!itemStr) return undefined;
+                    
+                    try {
+                        const { value, expiry } = JSON.parse(itemStr);
+                        if (Date.now() > expiry) {
+                            localStorage.removeItem(key);
+                            return undefined;
+                        }
+                        return value;
+                    } catch (e) {
+                        localStorage.removeItem(key);
+                        return undefined;
+                    }
+                }
+            };
+
+            // 全局工具函数
+            window.btf = {
+                saveToLocal,
+                // 动态加载脚本
+                getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.async = true;
+                    
+                    Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val));
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error(`加载脚本失败: ${url}`));
+                    
+                    document.head.appendChild(script);
+                }),
+                // 动态加载样式表
+                getCSS: (url, id) => new Promise((resolve, reject) => {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = url;
+                    if (id) link.id = id;
+                    
+                    link.onload = () => resolve();
+                    link.onerror = () => reject(new Error(`加载样式失败: ${url}`));
+                    
+                    document.head.appendChild(link);
+                }),
+                // 添加全局函数
+                addGlobalFn: (key, fn, name = false, parent = window) => {
+                    if (!false && key.startsWith('pjax')) return;
+                    const globalFn = parent.globalFn || {};
+                    globalFn[key] = globalFn[key] || {};
+                    globalFn[key][name || Object.keys(globalFn[key]).length] = fn;
+                    parent.globalFn = globalFn;
+                }
+            };
+
+            // 深色/浅色模式切换
+            const activateDarkMode = () => {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const themeMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeMeta) themeMeta.setAttribute('content', '#0d0d0d');
+            };
+
+            const activateLightMode = () => {
+                document.documentElement.setAttribute('data-theme', 'light');
+                const themeMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeMeta) themeMeta.setAttribute('content', '#ffffff');
+            };
+
+            // 挂载到全局
+            btf.activateDarkMode = activateDarkMode;
+            btf.activateLightMode = activateLightMode;
+
+            // 初始化主题模式
+            const theme = saveToLocal.get('theme');
+            if (theme === 'dark') activateDarkMode();
+            else if (theme === 'light') activateLightMode();
+
+            // 初始化侧边栏状态
+            const asideStatus = saveToLocal.get('aside-status');
+            if (asideStatus !== undefined) {
+                document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide');
+            }
+
+            // 检测苹果设备
+            const detectApple = () => {
+                if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+                    document.documentElement.classList.add('apple');
+                }
+            };
+            detectApple();
+        })();
+    </script>
+
+    <!-- 站点全局配置 -->
+    <script>
+        const GLOBAL_CONFIG = {
+            root: '/',
+            algolia: undefined,
+            localSearch: undefined,
+            translate: undefined,
+            highlight: {
+                "plugin": "highlight.js",
+                "highlightCopy": true,
+                "highlightLang": true,
+                "highlightHeightLimit": false,
+                "highlightFullpage": false,
+                "highlightMacStyle": false
+            },
+            copy: {
+                success: '复制成功',
+                error: '复制失败',
+                noSupport: '浏览器不支持'
+            },
+            relativeDate: {
+                homepage: false,
+                post: false
+            },
+            runtime: '',
+            dateSuffix: {
+                just: '刚刚',
+                min: '分钟前',
+                hour: '小时前',
+                day: '天前',
+                month: '个月前'
+            },
+            copyright: undefined,
+            lightbox: 'null',
+            Snackbar: undefined,
+            infinitegrid: {
+                js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+                buttonText: '加载更多'
+            },
+            isPhotoFigcaption: false,
+            islazyloadPlugin: false,
+            isAnchor: false,
+            percent: {
+                toc: true,
+                rightside: false,
+            },
+            autoDarkmode: false
+        };
+    </script>
+
+    <!-- 页面专属配置 -->
+    <script id="config-diff">
+        var GLOBAL_CONFIG_SITE = {
+            title: 'SongYang',
+            isHighlightShrink: false,
+            isToc: false,
+            pageType: 'home'
+        };
+    </script>
+
+    <!-- 新增：按钮样式优化 + 文章详情页样式 + 编辑弹窗样式 -->
+    <style>
+        #publish-btn {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #42b983;
+            color: white !important;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        #publish-btn:hover {
+            background: #3aa776;
+        }
+        #github-btn {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #333;
+            color: white !important;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        #github-btn:hover {
+            background: #555;
+        }
+        /* 文章详情页样式（加宽并置顶） */
+        .post-detail {
+            max-width: 90%; /* 加宽到90% */
+            width: 1200px; /* 最大宽度1200px */
+            margin: 2rem auto;
+            padding: 2.5rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 10; /* 确保在侧边栏上方 */
+        }
+        .post-detail h1 {
+            font-size: 2rem;
+            margin-bottom: 1.2rem;
+            color: #222;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .post-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .post-content {
+            line-height: 1.9;
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+        /* 文章内图片样式 */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        /* 文章内附件样式 */
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 0.8rem 0;
+            border: 1px solid #e9ecef;
+        }
+        .attachment-item i {
+            color: #409eff;
+            font-size: 1.2rem;
+        }
+        .attachment-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .attachment-size {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .download-btn {
+            padding: 0.4rem 0.8rem;
+            background: #409eff;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .download-btn:hover {
+            background: #3399ff;
+        }
+        /* 文章操作按钮（放在详情页内） */
+        .post-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+        }
+        .edit-btn, .delete-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .edit-btn {
+            background: #409eff;
+        }
+        .edit-btn:hover {
+            background: #3399ff;
+        }
+        .delete-btn {
+            background: #f56c6c;
+        }
+        .delete-btn:hover {
+            background: #f45454;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.2rem;
+            background: #42b983;
+            color: white !important;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-right: auto; /* 把返回按钮放到左边 */
+        }
+        .back-btn:hover {
+            background: #3aa776;
+        }
+        /* 编辑弹窗样式 */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .edit-modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 900px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .edit-modal h3 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-size: 1.3rem;
+        }
+        .edit-modal .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .edit-modal label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .edit-modal input, .edit-modal select, .edit-modal textarea {
+            width: 100%;
+            padding: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .edit-modal textarea {
+            min-height: 250px;
+            resize: vertical;
+        }
+        /* 编辑弹窗内的图片/附件按钮 */
+        .rich-text-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .insert-btn {
+            padding: 0.5rem 1rem;
+            background: #f0f2f5;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .insert-btn:hover {
+            background: #e6e8eb;
+        }
+        .modal-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .save-btn {
+            background: #42b983;
+            color: white;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .save-btn:hover {
+            background: #3aa776;
+        }
+        .cancel-btn {
+            background: #909399;
+            color: white;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .cancel-btn:hover {
+            background: #82868b;
+        }
+    </style>
+
+    <meta name="generator" content="Hexo 8.1.1">
 </head>
+
 <body>
-  <div class="publish-container">
-    <h2>发布新文章</h2>
-    <form id="publish-form">
-      <div class="form-group">
-        <label for="title">文章标题</label>
-        <input type="text" id="title" name="title" required placeholder="请输入文章标题">
-      </div>
-      <div class="form-group">
-        <label for="category">文章分类</label>
-        <select id="category" name="category" required>
-          <option value="博客搭建">博客搭建</option>
-          <option value="前端开发">前端开发</option>
-          <option value="后端开发">后端开发</option>
-          <option value="网络安全">网络安全</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="tags">文章标签（用逗号分隔）</label>
-        <input type="text" id="tags" name="tags" placeholder="例如: Hexo, 教程">
-      </div>
-      <div class="form-group">
-        <label for="content">文章内容（支持图片/附件）</label>
-        <div class="rich-text-actions">
-          <button type="button" class="insert-btn" id="insert-image">
-            <i class="fas fa-image"></i> 插入图片
-          </button>
-          <button type="button" class="insert-btn" id="insert-attachment">
-            <i class="fas fa-paperclip"></i> 插入附件
-          </button>
+    <div class="page" id="body-wrap">
+        <!-- 页面头部 -->
+        <header class="full_page" id="page-header">
+            <nav id="nav">
+                <span id="blog-info">
+                    <a class="nav-site-title" href="/">
+                        <span class="site-name">SongYang</span>
+                    </a>
+                </span>
+                <div id="menus"></div>
+            </nav>
+            <div id="site-info">
+                <h1 id="site-title">SongYang</h1>
+            </div>
+            <div id="scroll-down">
+                <i class="fas fa-angle-down scroll-down-effects"></i>
+            </div>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="layout" id="content-inner">
+            <!-- 最新文章列表 -->
+            <div class="recent-posts nc" id="recent-posts">
+                <div class="recent-post-items" id="post-list-container">
+                    <!-- 文章1：Hello World -->
+                    <div class="recent-post-item">
+                        <div class="recent-post-info no-cover">
+                            <a class="article-title" href="/2026/2/16/hello-world/" title="Hello World">Hello World</a>
+                            <div class="article-meta-wrap">
+                                <span class="post-meta-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span class="article-meta-label">发表于</span>
+                                    <time datetime="2026-02-16T08:43:59.553Z" title="发表于 2026-2-16 16:43:59">2026-2-16</time>
+                                </span>
+                            </div>
+                            <div class="content">
+                                Welcome to Hexo! This is your very first post. Check documentation for more info. 
+                                If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. 
+                                <br>
+                                <strong>Quick Start</strong>
+                                <br>
+                                Create a new post: <code>hexo new "My New Post"</code> (More info: Writing)
+                                <br>
+                                Run server: <code>hexo server</code> (More info: Server)
+                                <br>
+                                Generate static files: <code>hexo generate</code> (More info: Generating)
+                                <br>
+                                Deploy to remote sites: <code>hexo deploy</code> (More info: Deployment)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 文章2：我的第一篇 Hexo 博客 -->
+                    <div class="recent-post-item">
+                        <div class="recent-post-info no-cover">
+                            <a class="article-title" href="/2026/2/16/%E5%BC%95%E5%8F%B7%E5%86%85%E6%98%AF%E6%96%87%E7%AB%A0%E6%A0%87%E9%A2%98/" title="我的第一篇 Hexo 博客">我的第一篇 Hexo 博客</a>
+                            <div class="article-meta-wrap">
+                                <span class="post-meta-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span class="article-meta-label">发表于</span>
+                                    <time datetime="2026-02-16T02:00:00.000Z" title="发表于 2026-2-16 10:00:00">2026-2-16</time>
+                                </span>
+                                <span class="article-meta">
+                                    <span class="article-meta-separator">|</span>
+                                    <i class="fas fa-inbox"></i>
+                                    <a class="article-meta__categories" href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/">博客搭建</a>
+                                </span>
+                            </div>
+                            <div class="content">
+                                这是我的第一篇 Hexo 博客
+                                <br>
+                                大家好，这是我用 Hexo 搭建的博客的第一篇文章～
+                                <br>
+                                <strong>功能测试</strong>
+                                <br>
+                                • 支持 Markdown 语法
+                                <br>
+                                • 可以插入图片
+                                <br>
+                                • 可以分类和标签
+                                <br>
+                                # 网络图片示例
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏内容 -->
+            <div class="aside-content" id="aside-content">
+                <!-- 个人信息卡片 -->
+                <div class="card-widget card-info text-center">
+                    <div class="avatar-img">
+                        <img src="/images/TX.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="Songyang 的头像">
+                    </div>
+                    <div class="author-info-name">Songyang</div>
+                    <div class="author-info-description">专注于前端/后端开发的学习者</div>
+                    <div class="site-data">
+                        <a href="/archives/">
+                            <div class="headline">文章</div>
+                            <div class="length-num">2</div>
+                        </a>
+                        <a href="/tags/">
+                            <div class="headline">标签</div>
+                            <div class="length-num">2</div>
+                        </a>
+                        <a href="/categories/">
+                            <div class="headline">分类</div>
+                            <div class="length-num">1</div>
+                        </a>
+                    </div>
+                    <!-- 修复重复ID问题，新增发布按钮样式 -->
+                    <a id="publish-btn" target="_self" rel="noopener" href="/publish.html">
+                        <i class="fas fa-pen"></i>
+                        <span>发布博客</span>
+                    </a>
+                    <a id="github-btn" target="_blank" rel="noopener" href="https://github.com/SongYang7">
+                        <i class="fab fa-github"></i>
+                        <span>Follow Me</span>
+                    </a>
+                </div>
+
+                <!-- 公告卡片 -->
+                <div class="card-widget card-announcement">
+                    <div class="item-headline">
+                        <i class="fas fa-bullhorn fa-shake"></i>
+                        <span>公告</span>
+                    </div>
+                    <div class="announcement_content">记录我的编程学习之路 | 持续更新中</div>
+                </div>
+
+                <!-- 粘性布局容器 -->
+                <div class="sticky_layout">
+                    <!-- 最新文章 -->
+                    <div class="card-widget card-recent-post">
+                        <div class="item-headline">
+                            <i class="fas fa-history"></i>
+                            <span>最新文章</span>
+                        </div>
+                        <div class="aside-list">
+                            <div class="aside-list-item no-cover">
+                                <div class="content">
+                                    <a class="title" href="/2026/2/16/hello-world/" title="Hello World">Hello World</a>
+                                    <time datetime="2026-02-16T08:43:59.553Z" title="发表于 2026-2-16 16:43:59">2026-2-16</time>
+                                </div>
+                            </div>
+                            <div class="aside-list-item no-cover">
+                                <div class="content">
+                                    <a class="title" href="/2026/2/16/%E5%BC%95%E5%8F%B7%E5%86%85%E6%98%AF%E6%96%87%E7%AB%A0%E6%A0%87%E9%A2%98/" title="我的第一篇 Hexo 博客">我的第一篇 Hexo 博客</a>
+                                    <time datetime="2026-02-16T02:00:00.000Z" title="发表于 2026-2-16 10:00:00">2026-2-16</time>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分类列表 -->
+                    <div class="card-widget card-categories">
+                        <div class="item-headline">
+                            <i class="fas fa-folder-open"></i>
+                            <span>分类</span>
+                        </div>
+                        <ul class="card-category-list" id="aside-cat-list">
+                            <li class="card-category-list-item">
+                                <a class="card-category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/">
+                                    <span class="card-category-list-name">博客搭建</span>
+                                    <span class="card-category-list-count">1</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 标签云 -->
+                    <div class="card-widget card-tags">
+                        <div class="item-headline">
+                            <i class="fas fa-tags"></i>
+                            <span>标签</span>
+                        </div>
+                        <div class="card-tag-cloud">
+                            <a href="/tags/%E6%95%99%E7%A8%8B/" style="font-size: 1.1em; color: #999">教程</a>
+                            <a href="/tags/Hexo/" style="font-size: 1.1em; color: #999">Hexo</a>
+                        </div>
+                    </div>
+
+                    <!-- 归档列表 -->
+                    <div class="card-widget card-archives">
+                        <div class="item-headline">
+                            <i class="fas fa-archive"></i>
+                            <span>归档</span>
+                        </div>
+                        <ul class="card-archive-list">
+                            <li class="card-archive-list-item">
+                                <a class="card-archive-list-link" href="/archives/2026/2/">
+                                    <span class="card-archive-list-date">二月 2026</span>
+                                    <span class="card-archive-list-count">2</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 网站信息 -->
+                    <div class="card-widget card-webinfo">
+                        <div class="item-headline">
+                            <i class="fas fa-chart-line"></i>
+                            <span>网站信息</span>
+                        </div>
+                        <div class="webinfo">
+                            <div class="webinfo-item">
+                                <div class="item-name">文章数目 :</div>
+                                <div class="item-count">2</div>
+                            </div>
+                            <div class="webinfo-item">
+                                <div class="item-name">本站访客数 :</div>
+                                <div class="item-count" id="busuanzi_value_site_uv">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </div>
+                            </div>
+                            <div class="webinfo-item">
+                                <div class="item-name">本站总浏览量 :</div>
+                                <div class="item-count" id="busuanzi_value_site_pv">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </div>
+                            </div>
+                            <div class="webinfo-item">
+                                <div class="item-name">最后更新时间 :</div>
+                                <div class="item-count" id="last-push-date" data-lastPushDate="2026-2-16T09:35:38.284Z">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 新增：文章编辑弹窗 -->
+        <div class="edit-modal" id="edit-modal">
+            <div class="edit-modal-content">
+                <h3>编辑文章</h3>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-post-id">
+                    <div class="form-group">
+                        <label for="edit-title">文章标题</label>
+                        <input type="text" id="edit-title" name="edit-title" required placeholder="请输入文章标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category">文章分类</label>
+                        <select id="edit-category" name="edit-category" required>
+                            <option value="博客搭建">博客搭建</option>
+                            <option value="前端开发">前端开发</option>
+                            <option value="后端开发">后端开发</option>
+                            <option value="网络安全">网络安全</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-tags">文章标签（用逗号分隔）</label>
+                        <input type="text" id="edit-tags" name="edit-tags" placeholder="例如: Hexo, 教程">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-content">文章内容（支持图片/附件）</label>
+                        <!-- 新增：富文本操作按钮 -->
+                        <div class="rich-text-actions">
+                            <button type="button" class="insert-btn" id="insert-image">
+                                <i class="fas fa-image"></i> 插入图片
+                            </button>
+                            <button type="button" class="insert-btn" id="insert-attachment">
+                                <i class="fas fa-paperclip"></i> 插入附件
+                            </button>
+                        </div>
+                        <textarea id="edit-content" name="edit-content" required placeholder="请输入文章内容，可使用Markdown语法，或点击上方按钮插入图片/附件"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="cancel-btn" id="cancel-edit">取消</button>
+                        <button type="submit" class="save-btn">保存修改</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <textarea id="content" name="content" required placeholder="请输入文章内容，可使用Markdown语法插入图片/附件"></textarea>
-      </div>
-      <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> 发布文章</button>
-    </form>
-  </div>
 
-  <script>
-    // 格式化日期：2026-03-03
-    const formatDate = () => {
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      return `${year}-${month}-${day}`;
-    };
+        <!-- 页脚 -->
+        <footer id="footer">
+            <div class="footer-other">
+                <div class="footer-copyright">
+                    <span class="copyright">&copy;&nbsp;2026 By Songyang</span>
+                    <span class="framework-info">
+                        <span>框架 </span>
+                        <a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a>
+                        <span class="footer-separator">|</span>
+                        <span>主题 </span>
+                        <a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.2</a>
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
 
-    // 插入图片
-    document.getElementById('insert-image').addEventListener('click', () => {
-      const imageUrl = prompt('请输入图片URL：');
-      if (imageUrl) {
-        const content = document.getElementById('content');
-        content.value += `\n![图片](${imageUrl})\n`;
-      }
+    <!-- 右侧工具栏 -->
+    <div id="rightside">
+        <div id="rightside-config-hide">
+            <button id="darkmode" type="button" title="日间和夜间模式切换">
+                <i class="fas fa-adjust"></i>
+            </button>
+            <button id="hide-aside-btn" type="button" title="单栏和双栏切换">
+                <i class="fas fa-arrows-alt-h"></i>
+            </button>
+        </div>
+        <div id="rightside-config-show">
+            <button id="rightside-config" type="button" title="设置">
+                <i class="fas fa-cog fa-spin"></i>
+            </button>
+            <button id="go-up" type="button" title="回到顶部">
+                <span class="scroll-percent"></span>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部脚本 -->
+    <script src="/js/utils.js?v=5.5.2"></script>
+    <script src="/js/main.js?v=5.5.2"></script>
+    <div class="js-pjax"></div>
+    <script async data-pjax src="/"></script>
+
+    <!-- 新增：动态渲染本地存储的文章 + 增删改 + 富文本功能 -->
+    <script>
+// 全局变量：当前编辑的文章ID
+let currentEditPostId = null;
+
+// 渲染本地存储的文章到主页并更新文章数目
+const renderLocalPosts = () => {
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const container = document.getElementById('post-list-container');
+    
+    // 先清空已有的本地文章（避免重复渲染）
+    const localPostItems = container.querySelectorAll('.recent-post-item[data-local-post="true"]');
+    localPostItems.forEach(item => item.remove());
+    
+    // 遍历新文章，生成HTML
+    posts.forEach(post => {
+        const postHtml = `
+            <div class="recent-post-item" data-local-post="true" data-post-id="${post.id}">
+                <div class="recent-post-info no-cover">
+                    <a class="article-title" href="#${post.slug}" title="${post.title}">${post.title}</a>
+                    <div class="article-meta-wrap">
+                        <span class="post-meta-date">
+                            <i class="far fa-calendar-alt"></i>
+                            <span class="article-meta-label">发表于</span>
+                            <time title="发表于 ${post.date}">${post.date}</time>
+                        </span>
+                        <span class="article-meta">
+                            <span class="article-meta-separator">|</span>
+                            <i class="fas fa-inbox"></i>
+                            <span>${post.category}</span>
+                        </span>
+                    </div>
+                    <div class="content">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('afterbegin', postHtml);
     });
 
-    // 插入附件
-    document.getElementById('insert-attachment').addEventListener('click', () => {
-      const attachmentUrl = prompt('请输入附件URL：');
-      const attachmentName = prompt('请输入附件名称：');
-      if (attachmentUrl && attachmentName) {
-        const content = document.getElementById('content');
-        content.value += `\n[${attachmentName}](${attachmentUrl})\n`;
-      }
-    });
+    // 更新文章数目：原有2篇 + 本地存储的新文章数
+    const originalPostCount = 2;
+    const totalPostCount = originalPostCount + posts.length;
+    // 更新个人信息卡片的文章数目
+    const postCountElement = document.querySelector('.site-data .length-num');
+    if (postCountElement) {
+        postCountElement.textContent = totalPostCount;
+    }
+    // 更新网站信息卡片的文章数目
+    const webinfoPostCount = document.querySelector('.webinfo-item:nth-child(1) .item-count');
+    if (webinfoPostCount) {
+        webinfoPostCount.textContent = totalPostCount;
+    }
+};
 
-    // 提交表单
-    document.getElementById('publish-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const title = document.getElementById('title').value.trim();
-      const category = document.getElementById('category').value;
-      const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
-      const content = document.getElementById('content').value.trim();
-      const date = formatDate();
-      const id = Date.now(); // 使用时间戳作为唯一ID，彻底杜绝重复
+// 打开编辑弹窗
+const openEditModal = (postId) => {
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
 
-      // 1. 获取本地存储的文章列表
-      let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-      // 2. 添加新文章（移除slug，改用id作为锚点）
-      posts.unshift({
-        id, // 核心：唯一ID
-        title,
-        category,
-        tags,
-        content,
-        date
-      });
-      // 3. 存回本地存储
-      localStorage.setItem('my_blog_posts', JSON.stringify(posts));
-      
-      // 4. 提示并跳转到主页
-      alert('发布成功！即将返回主页');
-      window.location.href = '/'; // 跳转到 index.html
+    // 填充表单数据
+    document.getElementById('edit-post-id').value = post.id;
+    document.getElementById('edit-title').value = post.title;
+    document.getElementById('edit-category').value = post.category;
+    document.getElementById('edit-tags').value = post.tags.join(', ');
+    document.getElementById('edit-content').value = post.content;
+
+    // 显示弹窗
+    document.getElementById('edit-modal').style.display = 'flex';
+    currentEditPostId = postId;
+};
+
+// 关闭编辑弹窗
+const closeEditModal = () => {
+    document.getElementById('edit-modal').style.display = 'none';
+    document.getElementById('edit-form').reset();
+    currentEditPostId = null;
+};
+
+// 删除文章
+const deletePost = (postId) => {
+    let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    posts = posts.filter(p => p.id !== postId);
+    localStorage.setItem('my_blog_posts', JSON.stringify(posts));
+    
+    // 重新渲染文章列表
+    renderLocalPosts();
+    alert('文章删除成功！');
+    window.location.href = '/'; // 返回主页
+};
+
+// 保存编辑后的文章
+const saveEditedPost = (e) => {
+    e.preventDefault();
+    
+    if (!currentEditPostId) return;
+
+    const title = document.getElementById('edit-title').value.trim();
+    const category = document.getElementById('edit-category').value;
+    const tags = document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(t => t);
+    const content = document.getElementById('edit-content').value.trim();
+
+    let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const postIndex = posts.findIndex(p => p.id === currentEditPostId);
+    
+    if (postIndex !== -1) {
+        // 更新文章信息（保留原有的date和slug）
+        posts[postIndex] = {
+            ...posts[postIndex],
+            title,
+            category,
+            tags,
+            content
+        };
+        
+        localStorage.setItem('my_blog_posts', JSON.stringify(posts));
+        closeEditModal();
+        renderLocalPosts();
+        alert('文章修改成功！');
+        window.location.href = `#${posts[postIndex].slug}`; // 刷新详情页
+    }
+};
+
+// 插入图片到编辑器
+const insertImage = () => {
+    const imageUrl = prompt('请输入图片URL：');
+    if (imageUrl) {
+        const contentArea = document.getElementById('edit-content');
+        const cursorPos = contentArea.selectionStart;
+        const textBefore = contentArea.value.substring(0, cursorPos);
+        const textAfter = contentArea.value.substring(cursorPos);
+        contentArea.value = textBefore + `\n![图片](${imageUrl})\n` + textAfter;
+    }
+};
+
+// 插入附件到编辑器
+const insertAttachment = () => {
+    const attachmentUrl = prompt('请输入附件URL：');
+    const attachmentName = prompt('请输入附件名称：');
+    if (attachmentUrl && attachmentName) {
+        const contentArea = document.getElementById('edit-content');
+        const cursorPos = contentArea.selectionStart;
+        const textBefore = contentArea.value.substring(0, cursorPos);
+        const textAfter = contentArea.value.substring(cursorPos);
+        contentArea.value = textBefore + `\n[${attachmentName}](${attachmentUrl})\n` + textAfter;
+    }
+};
+
+// 解析文章内容中的图片和附件
+const parseRichContent = (content) => {
+    // 解析图片：![alt](url)
+    content = content.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1">');
+    // 解析附件：[name](url)
+    content = content.replace(/\[(.*?)\]\((.*?)\)/g, (match, name, url) => {
+        return `
+            <div class="attachment-item">
+                <i class="fas fa-file"></i>
+                <span class="attachment-name">${name}</span>
+                <a href="${url}" class="download-btn" download>
+                    <i class="fas fa-download"></i> 下载
+                </a>
+            </div>
+        `;
     });
-  </script>
+    // 解析换行
+    return content.replace(/\n/g, '<br>');
+};
+
+// 根据URL hash显示文章详情（带操作按钮）
+const showPostDetail = () => {
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const post = posts.find(p => p.slug === hash);
+    if (!post) return;
+
+    // 隐藏文章列表，显示文章详情
+    document.getElementById('recent-posts').style.display = 'none';
+    const detailContainer = document.createElement('div');
+    detailContainer.className = 'post-detail';
+    detailContainer.innerHTML = `
+        <h1>${post.title}</h1>
+        <div class="post-meta">
+            <span><i class="far fa-calendar-alt"></i> 发表于 ${post.date}</span>
+            <span><i class="fas fa-inbox"></i> 分类: ${post.category}</span>
+            <span><i class="fas fa-tags"></i> 标签: ${post.tags.length > 0 ? post.tags.join(', ') : '无'}</span>
+        </div>
+        <div class="post-content">${parseRichContent(post.content)}</div>
+        <!-- 操作按钮放在文章详情页内 -->
+        <div class="post-actions">
+            <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> 返回主页</a>
+            <button class="edit-btn" data-id="${post.id}">
+                <i class="fas fa-edit"></i> 编辑
+            </button>
+            <button class="delete-btn" data-id="${post.id}">
+                <i class="fas fa-trash"></i> 删除
+            </button>
+        </div>
+    `;
+    document.getElementById('content-inner').insertBefore(detailContainer, document.getElementById('aside-content'));
+
+    // 绑定详情页内的编辑/删除按钮事件
+    document.querySelector('.edit-btn').addEventListener('click', (e) => {
+        const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+        openEditModal(postId);
+    });
+    document.querySelector('.delete-btn').addEventListener('click', (e) => {
+        const postId = parseInt(e.target.dataset.id || e.target.parentElement.dataset.id);
+        if (confirm('确定要删除这篇文章吗？删除后无法恢复！')) {
+            deletePost(postId);
+        }
+    });
+};
+
+// 绑定编辑表单提交事件
+document.getElementById('edit-form').addEventListener('submit', saveEditedPost);
+// 绑定取消编辑按钮事件
+document.getElementById('cancel-edit').addEventListener('click', closeEditModal);
+// 绑定插入图片/附件按钮事件
+document.getElementById('insert-image').addEventListener('click', insertImage);
+document.getElementById('insert-attachment').addEventListener('click', insertAttachment);
+
+// 页面加载和URL变化时执行
+window.onload = () => {
+    renderLocalPosts();
+    showPostDetail();
+};
+window.onhashchange = showPostDetail;
+    </script>
 </body>
 </html>
