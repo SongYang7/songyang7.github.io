@@ -524,40 +524,54 @@
 
     <!-- 新增：动态渲染本地存储的文章 -->
     <script>
-        // 渲染本地存储的文章到主页
-        const renderLocalPosts = () => {
-            const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-            const container = document.getElementById('post-list-container');
-            
-            // 遍历新文章，生成HTML
-            posts.forEach(post => {
-                const postHtml = `
-                    <div class="recent-post-item">
-                        <div class="recent-post-info no-cover">
-                            <a class="article-title" href="javascript:void(0)" title="${post.title}">${post.title}</a>
-                            <div class="article-meta-wrap">
-                                <span class="post-meta-date">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span class="article-meta-label">发表于</span>
-                                    <time title="发表于 ${post.date}">${post.date}</time>
-                                </span>
-                                <span class="article-meta">
-                                    <span class="article-meta-separator">|</span>
-                                    <i class="fas fa-inbox"></i>
-                                    <span>${post.category}</span>
-                                </span>
-                            </div>
-                            <div class="content">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</div>
-                        </div>
+// 渲染本地存储的文章到主页并更新文章数目
+const renderLocalPosts = () => {
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const container = document.getElementById('post-list-container');
+    
+    // 遍历新文章，生成HTML
+    posts.forEach(post => {
+        const postHtml = `
+            <div class="recent-post-item">
+                <div class="recent-post-info no-cover">
+                    <a class="article-title" href="javascript:void(0)" title="${post.title}">${post.title}</a>
+                    <div class="article-meta-wrap">
+                        <span class="post-meta-date">
+                            <i class="far fa-calendar-alt"></i>
+                            <span class="article-meta-label">发表于</span>
+                            <time title="发表于 ${post.date}">${post.date}</time>
+                        </span>
+                        <span class="article-meta">
+                            <span class="article-meta-separator">|</span>
+                            <i class="fas fa-inbox"></i>
+                            <span>${post.category}</span>
+                        </span>
                     </div>
-                `;
-                // 把新文章添加到列表最前面
-                container.insertAdjacentHTML('afterbegin', postHtml);
-            });
-        };
+                    <div class="content">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</div>
+                </div>
+            </div>
+        `;
+        // 把新文章添加到列表最前面
+        container.insertAdjacentHTML('afterbegin', postHtml);
+    });
 
-        // 页面加载完成后执行渲染
-        window.onload = renderLocalPosts;
+    // 核心修改：更新侧边栏文章数目（原有2篇 + 本地新增文章数）
+    const originalPostCount = 2; // 固定的2篇初始文章
+    const totalPostCount = originalPostCount + posts.length;
+    // 更新"文章"数目显示
+    const postCountElement = document.querySelector('.site-data .length-num');
+    if (postCountElement) {
+        postCountElement.textContent = totalPostCount;
+    }
+    // 额外：更新网站信息卡片里的文章数目
+    const webinfoPostCount = document.querySelector('.webinfo-item:nth-child(1) .item-count');
+    if (webinfoPostCount) {
+        webinfoPostCount.textContent = totalPostCount;
+    }
+};
+
+// 页面加载完成后执行渲染
+window.onload = renderLocalPosts;
     </script>
 </body>
 </html>
