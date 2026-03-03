@@ -147,7 +147,7 @@
 
       // 1. 获取本地存储的文章列表
       let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-      // 2. 添加新文章（移除slug，改用id作为锚点）
+      // 2. 添加新文章（最新的放在最前面）
       posts.unshift({
         id, // 核心：唯一ID
         title,
