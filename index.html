@@ -493,7 +493,7 @@
             <div class="recent-posts nc" id="recent-posts">
                 <div class="recent-post-items" id="post-list-container">
                     <!-- 文章1：Hello World -->
-                    <div class="recent-post-item">
+                    <div class="recent-post-item" data-hexo-post="true">
                         <div class="recent-post-info no-cover">
                             <a class="article-title" href="/2026/2/16/hello-world/" title="Hello World">Hello World</a>
                             <div class="article-meta-wrap">
@@ -521,7 +521,7 @@
                     </div>
 
                     <!-- 文章2：我的第一篇 Hexo 博客 -->
-                    <div class="recent-post-item">
+                    <div class="recent-post-item" data-hexo-post="true">
                         <div class="recent-post-info no-cover">
                             <a class="article-title" href="/2026/2/16/%E5%BC%95%E5%8F%B7%E5%86%85%E6%98%AF%E6%96%87%E7%AB%A0%E6%A0%87%E9%A2%98/" title="我的第一篇 Hexo 博客">我的第一篇 Hexo 博客</a>
                             <div class="article-meta-wrap">
@@ -819,7 +819,7 @@ const renderLocalPosts = () => {
     const localPostItems = container.querySelectorAll('.recent-post-item[data-local-post="true"]');
     localPostItems.forEach(item => item.remove());
     
-    // 遍历新文章，生成HTML并按顺序追加
+    // 遍历新文章，生成HTML并按顺序追加到列表最前面
     posts.forEach(post => {
         // 格式化发布时间为北京时间（精确到时分秒）
         const beijingTime = formatBeijingTime(post.id);
@@ -844,8 +844,8 @@ const renderLocalPosts = () => {
                 </div>
             </div>
         `;
-        // 修正：使用 beforeend 追加到列表末尾，保持排序顺序
-        container.insertAdjacentHTML('beforeend', postHtml);
+        // 修正：使用 afterbegin 插入到列表最前面，确保本地文章在最上面
+        container.insertAdjacentHTML('afterbegin', postHtml);
     });
 
     // 更新文章数目：原有2篇 + 本地存储的新文章数
