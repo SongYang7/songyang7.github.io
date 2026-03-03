@@ -47,6 +47,26 @@
     .submit-btn:hover {
       background: #3aa776;
     }
+    /* 富文本操作按钮 */
+    .rich-text-actions {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+    .insert-btn {
+      padding: 0.5rem 1rem;
+      background: #f0f2f5;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .insert-btn:hover {
+      background: #e6e8eb;
+    }
   </style>
 </head>
 <body>
@@ -71,8 +91,16 @@
         <input type="text" id="tags" name="tags" placeholder="例如: Hexo, 教程">
       </div>
       <div class="form-group">
-        <label for="content">文章内容（支持简单文本）</label>
-        <textarea id="content" name="content" required placeholder="请输入文章内容"></textarea>
+        <label for="content">文章内容（支持图片/附件）</label>
+        <div class="rich-text-actions">
+          <button type="button" class="insert-btn" id="insert-image">
+            <i class="fas fa-image"></i> 插入图片
+          </button>
+          <button type="button" class="insert-btn" id="insert-attachment">
+            <i class="fas fa-paperclip"></i> 插入附件
+          </button>
+        </div>
+        <textarea id="content" name="content" required placeholder="请输入文章内容，可使用Markdown语法插入图片/附件"></textarea>
       </div>
       <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> 发布文章</button>
     </form>
@@ -88,15 +116,24 @@
       return `${year}-${month}-${day}`;
     };
 
-    // 生成唯一的文章标识（slug），用于URL链接
-    const generateSlug = (title) => {
-      // 转小写 + 替换特殊字符 + 去除首尾横线
-      return title.toLowerCase()
-        .replace(/[\s\u4e00-\u9fa5]+/g, '-') // 空格和中文替换为横线
-        .replace(/[^a-z0-9-]/g, '') // 移除非字母数字和横线的字符
-        .replace(/(^-|-$)/g, '') // 移除首尾横线
-        .replace(/-+/g, '-'); // 多个横线合并为一个
-    };
+    // 插入图片
+    document.getElementById('insert-image').addEventListener('click', () => {
+      const imageUrl = prompt('请输入图片URL：');
+      if (imageUrl) {
+        const content = document.getElementById('content');
+        content.value += `\n![图片](${imageUrl})\n`;
+      }
+    });
+
+    // 插入附件
+    document.getElementById('insert-attachment').addEventListener('click', () => {
+      const attachmentUrl = prompt('请输入附件URL：');
+      const attachmentName = prompt('请输入附件名称：');
+      if (attachmentUrl && attachmentName) {
+        const content = document.getElementById('content');
+        content.value += `\n[${attachmentName}](${attachmentUrl})\n`;
+      }
+    });
 
     // 提交表单
     document.getElementById('publish-form').addEventListener('submit', function(e) {
@@ -106,20 +143,18 @@
       const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
       const content = document.getElementById('content').value.trim();
       const date = formatDate();
-      // 生成唯一slug（解决文章链接点击问题的核心）
-      const slug = generateSlug(title) || `post-${Date.now()}`; // 兜底：如果标题为空则用时间戳
+      const id = Date.now(); // 使用时间戳作为唯一ID，彻底杜绝重复
 
       // 1. 获取本地存储的文章列表
       let posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
-      // 2. 添加新文章（新增slug字段）
-      posts.unshift({ // unshift 把新文章放到最前面
-        id: Date.now(), // 唯一ID
+      // 2. 添加新文章（移除slug，改用id作为锚点）
+      posts.unshift({
+        id, // 核心：唯一ID
         title,
         category,
         tags,
         content,
-        date,
-        slug // 新增：文章唯一标识，用于链接
+        date
       });
       // 3. 存回本地存储
       localStorage.setItem('my_blog_posts', JSON.stringify(posts));
