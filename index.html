@@ -210,7 +210,7 @@
         };
     </script>
 
-    <!-- 新增：按钮样式优化 -->
+    <!-- 新增：按钮样式优化 + 文章详情页样式 -->
     <style>
         #publish-btn {
             display: block;
@@ -237,6 +237,48 @@
         }
         #github-btn:hover {
             background: #555;
+        }
+        /* 新增：文章详情页样式 */
+        .post-detail {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .post-detail h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+        .post-meta span {
+            margin-right: 1.2rem;
+            display: inline-block;
+        }
+        .post-content {
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 2rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background: #42b983;
+            color: white !important;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-btn:hover {
+            background: #3aa776;
         }
     </style>
 
@@ -522,12 +564,14 @@
     <div class="js-pjax"></div>
     <script async data-pjax src="/"></script>
 
-    <!-- 新增：动态渲染本地存储的文章 -->
+    <!-- 新增：动态渲染本地存储的文章 + 文章详情页逻辑 -->
     <script>
+// 渲染本地存储的文章到主页并更新文章数目
 const renderLocalPosts = () => {
     const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
     const container = document.getElementById('post-list-container');
     
+    // 遍历新文章，生成HTML（链接改为#slug）
     posts.forEach(post => {
         const postHtml = `
             <div class="recent-post-item">
@@ -552,10 +596,22 @@ const renderLocalPosts = () => {
         container.insertAdjacentHTML('afterbegin', postHtml);
     });
 
-    // ... 省略更新文章数目的代码 ...
+    // 更新文章数目：原有2篇 + 本地存储的新文章数
+    const originalPostCount = 2;
+    const totalPostCount = originalPostCount + posts.length;
+    // 更新个人信息卡片的文章数目
+    const postCountElement = document.querySelector('.site-data .length-num');
+    if (postCountElement) {
+        postCountElement.textContent = totalPostCount;
+    }
+    // 更新网站信息卡片的文章数目
+    const webinfoPostCount = document.querySelector('.webinfo-item:nth-child(1) .item-count');
+    if (webinfoPostCount) {
+        webinfoPostCount.textContent = totalPostCount;
+    }
 };
 
-// 新增：根据URL hash显示文章详情
+// 根据URL hash显示文章详情
 const showPostDetail = () => {
     const hash = window.location.hash.substring(1);
     if (!hash) return;
@@ -573,7 +629,7 @@ const showPostDetail = () => {
         <div class="post-meta">
             <span>发表于 ${post.date}</span>
             <span>分类: ${post.category}</span>
-            <span>标签: ${post.tags.join(', ')}</span>
+            <span>标签: ${post.tags.length > 0 ? post.tags.join(', ') : '无'}</span>
         </div>
         <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
         <a href="/" class="back-btn">← 返回主页</a>
