@@ -210,6 +210,36 @@
         };
     </script>
 
+    <!-- 新增：按钮样式优化 -->
+    <style>
+        #publish-btn {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #42b983;
+            color: white !important;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        #publish-btn:hover {
+            background: #3aa776;
+        }
+        #github-btn {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #333;
+            color: white !important;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        #github-btn:hover {
+            background: #555;
+        }
+    </style>
+
     <meta name="generator" content="Hexo 8.1.1">
 </head>
 
@@ -237,7 +267,7 @@
         <main class="layout" id="content-inner">
             <!-- 最新文章列表 -->
             <div class="recent-posts nc" id="recent-posts">
-                <div class="recent-post-items">
+                <div class="recent-post-items" id="post-list-container">
                     <!-- 文章1：Hello World -->
                     <div class="recent-post-item">
                         <div class="recent-post-info no-cover">
@@ -325,11 +355,12 @@
                             <div class="length-num">1</div>
                         </a>
                     </div>
-                    <a id="card-info-btn" target="_blank" rel="noopener" href="/publish.html">
-                        <i class="fab fa-github"></i>
+                    <!-- 修复重复ID问题，新增发布按钮样式 -->
+                    <a id="publish-btn" target="_self" rel="noopener" href="/publish.html">
+                        <i class="fas fa-pen"></i>
                         <span>发布博客</span>
                     </a>
-                    <a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/SongYang7">
+                    <a id="github-btn" target="_blank" rel="noopener" href="https://github.com/SongYang7">
                         <i class="fab fa-github"></i>
                         <span>Follow Me</span>
                     </a>
@@ -490,5 +521,43 @@
     <script src="/js/main.js?v=5.5.2"></script>
     <div class="js-pjax"></div>
     <script async data-pjax src="/"></script>
+
+    <!-- 新增：动态渲染本地存储的文章 -->
+    <script>
+        // 渲染本地存储的文章到主页
+        const renderLocalPosts = () => {
+            const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+            const container = document.getElementById('post-list-container');
+            
+            // 遍历新文章，生成HTML
+            posts.forEach(post => {
+                const postHtml = `
+                    <div class="recent-post-item">
+                        <div class="recent-post-info no-cover">
+                            <a class="article-title" href="javascript:void(0)" title="${post.title}">${post.title}</a>
+                            <div class="article-meta-wrap">
+                                <span class="post-meta-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span class="article-meta-label">发表于</span>
+                                    <time title="发表于 ${post.date}">${post.date}</time>
+                                </span>
+                                <span class="article-meta">
+                                    <span class="article-meta-separator">|</span>
+                                    <i class="fas fa-inbox"></i>
+                                    <span>${post.category}</span>
+                                </span>
+                            </div>
+                            <div class="content">${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</div>
+                        </div>
+                    </div>
+                `;
+                // 把新文章添加到列表最前面
+                container.insertAdjacentHTML('afterbegin', postHtml);
+            });
+        };
+
+        // 页面加载完成后执行渲染
+        window.onload = renderLocalPosts;
+    </script>
 </body>
 </html>
