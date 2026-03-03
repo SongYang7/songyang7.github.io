@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发布新文章 - Songyang</title>
+  <link rel="stylesheet" href="/css/index.css?v=5.5.2">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
+  <style>
+    .publish-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .form-group textarea {
+      min-height: 200px;
+      resize: vertical;
+    }
+    .submit-btn {
+      background: #42b983;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #3aa776;
+    }
+  </style>
+</head>
+<body>
+  <div class="publish-container">
+    <h2>发布新文章</h2>
+    <form id="publish-form">
+      <div class="form-group">
+        <label for="title">文章标题</label>
+        <input type="text" id="title" name="title" required>
+      </div>
+      <div class="form-group">
+        <label for="category">文章分类</label>
+        <select id="category" name="category" required>
+          <option value="博客搭建">博客搭建</option>
+          <option value="前端开发">前端开发</option>
+          <option value="后端开发">后端开发</option>
+          <option value="网络安全">网络安全</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="tags">文章标签（用逗号分隔）</label>
+        <input type="text" id="tags" name="tags" placeholder="例如: Hexo, 教程">
+      </div>
+      <div class="form-group">
+        <label for="content">文章内容（支持 Markdown）</label>
+        <textarea id="content" name="content" required></textarea>
+      </div>
+      <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> 发布文章</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('publish-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const category = document.getElementById('category').value;
+      const tags = document.getElementById('tags').value.split(',').map(t => t.trim());
+      const content = document.getElementById('content').value;
+
+      // 这里只是前端示例，实际发布需要后端接口
+      alert('发布成功！\n标题: ' + title + '\n分类: ' + category + '\n标签: ' + tags.join(', '));
+      console.log('文章内容:', content);
+    });
+  </script>
+</body>
+</html>
