@@ -524,17 +524,15 @@
 
     <!-- 新增：动态渲染本地存储的文章 -->
     <script>
-// 渲染本地存储的文章到主页并更新文章数目
 const renderLocalPosts = () => {
     const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
     const container = document.getElementById('post-list-container');
     
-    // 遍历新文章，生成HTML
     posts.forEach(post => {
         const postHtml = `
             <div class="recent-post-item">
                 <div class="recent-post-info no-cover">
-                    <a class="article-title" href="javascript:void(0)" title="${post.title}">${post.title}</a>
+                    <a class="article-title" href="#${post.slug}" title="${post.title}">${post.title}</a>
                     <div class="article-meta-wrap">
                         <span class="post-meta-date">
                             <i class="far fa-calendar-alt"></i>
@@ -551,27 +549,44 @@ const renderLocalPosts = () => {
                 </div>
             </div>
         `;
-        // 把新文章添加到列表最前面
         container.insertAdjacentHTML('afterbegin', postHtml);
     });
 
-    // 核心修改：更新侧边栏文章数目（原有2篇 + 本地新增文章数）
-    const originalPostCount = 2; // 固定的2篇初始文章
-    const totalPostCount = originalPostCount + posts.length;
-    // 更新"文章"数目显示
-    const postCountElement = document.querySelector('.site-data .length-num');
-    if (postCountElement) {
-        postCountElement.textContent = totalPostCount;
-    }
-    // 额外：更新网站信息卡片里的文章数目
-    const webinfoPostCount = document.querySelector('.webinfo-item:nth-child(1) .item-count');
-    if (webinfoPostCount) {
-        webinfoPostCount.textContent = totalPostCount;
-    }
+    // ... 省略更新文章数目的代码 ...
 };
 
-// 页面加载完成后执行渲染
-window.onload = renderLocalPosts;
+// 新增：根据URL hash显示文章详情
+const showPostDetail = () => {
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    const post = posts.find(p => p.slug === hash);
+    if (!post) return;
+
+    // 隐藏文章列表，显示文章详情
+    document.getElementById('recent-posts').style.display = 'none';
+    const detailContainer = document.createElement('div');
+    detailContainer.className = 'post-detail';
+    detailContainer.innerHTML = `
+        <h1>${post.title}</h1>
+        <div class="post-meta">
+            <span>发表于 ${post.date}</span>
+            <span>分类: ${post.category}</span>
+            <span>标签: ${post.tags.join(', ')}</span>
+        </div>
+        <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
+        <a href="/" class="back-btn">← 返回主页</a>
+    `;
+    document.getElementById('content-inner').insertBefore(detailContainer, document.getElementById('aside-content'));
+};
+
+// 页面加载和URL变化时执行
+window.onload = () => {
+    renderLocalPosts();
+    showPostDetail();
+};
+window.onhashchange = showPostDetail;
     </script>
 </body>
 </html>
