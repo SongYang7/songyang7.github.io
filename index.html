@@ -607,7 +607,7 @@
                             <i class="fas fa-history"></i>
                             <span>最新文章</span>
                         </div>
-                        <div class="aside-list">
+                        <div class="aside-list" id="latest-post-list">
                             <div class="aside-list-item no-cover">
                                 <div class="content">
                                     <a class="title" href="/2026/2/16/hello-world/" title="Hello World">Hello World</a>
@@ -798,6 +798,9 @@ let currentEditPostId = null;
 // 渲染本地存储的文章到主页并更新文章数目
 const renderLocalPosts = () => {
     const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    // 核心修改：按id降序排序，最新发布的在最上面
+    posts.sort((a, b) => b.id - a.id);
+    
     const container = document.getElementById('post-list-container');
     
     // 先清空已有的本地文章（避免重复渲染）
@@ -843,6 +846,36 @@ const renderLocalPosts = () => {
     if (webinfoPostCount) {
         webinfoPostCount.textContent = totalPostCount;
     }
+
+    // 同步更新右侧最新文章列表
+    updateLatestPosts();
+};
+
+// 更新右侧"最新文章"列表
+const updateLatestPosts = () => {
+    const posts = JSON.parse(localStorage.getItem('my_blog_posts')) || [];
+    // 按id降序排序，取最新的文章
+    posts.sort((a, b) => b.id - a.id);
+    
+    const latestList = document.getElementById('latest-post-list');
+    if (!latestList) return;
+    
+    // 先清空原有本地文章项
+    const localLatestItems = latestList.querySelectorAll('.aside-list-item[data-local="true"]');
+    localLatestItems.forEach(item => item.remove());
+    
+    // 添加本地文章到最新文章列表
+    posts.slice(0, 5).forEach(post => {
+        const itemHtml = `
+            <div class="aside-list-item no-cover" data-local="true">
+                <div class="content">
+                    <a class="title" href="#post-${post.id}" title="${post.title}">${post.title}</a>
+                    <time title="发表于 ${post.date}">${post.date}</time>
+                </div>
+            </div>
+        `;
+        latestList.insertAdjacentHTML('afterbegin', itemHtml);
+    });
 };
 
 // 打开编辑弹窗
@@ -876,7 +909,7 @@ const deletePost = (postId) => {
     posts = posts.filter(p => p.id !== postId);
     localStorage.setItem('my_blog_posts', JSON.stringify(posts));
     
-    // 重新渲染文章列表
+    // 重新渲染文章列表和最新文章
     renderLocalPosts();
     alert('文章删除成功！');
     window.location.href = '/'; // 返回主页
